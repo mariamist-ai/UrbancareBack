@@ -1,0 +1,6 @@
+@UrbanCareBack_HostAddress = http://localhost:5073
+
+GET {{UrbanCareBack_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
