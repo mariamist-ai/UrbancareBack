@@ -4,26 +4,29 @@ using Microsoft.IdentityModel.Tokens;
 using UrbanCareBack.Data;
 using System.Text;
 using UrbanCareBack.Custom;
-using UrbanCareBack.Models;
-using UrbanCareBack.Services; // Asegúrate de incluir los espacios de nombres necesarios
+using UrbanCareBack.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+//bd
 builder.Services.AddDbContext<UrbanCareDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("MySQLConnection");
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
-// Registrando el servicio
+// servicios
 builder.Services.AddScoped<AdministradorService>();
 builder.Services.AddScoped<ParticipanteServices>();
-builder.Services.AddControllers(); // Solo necesitas esto para una API
+builder.Services.AddScoped<OrganizacionService>();
+builder.Services.AddScoped<ColaboradoresService>();
+builder.Services.AddScoped<EventoService>();
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<Utilidades>();
 
+//jwt
 builder.Services.AddAuthentication(config => { 
     config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -34,28 +37,27 @@ builder.Services.AddAuthentication(config => {
     config.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        ValidateIssuer = false,//cuando el front haga uso de los endpoints, cambiar a true 
+        ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
-        IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))  // Obtener la clave desde la appsettings.json
     };
 });
 
-//AGREGANDO CORS PARA QUE LA API PUEDA SER USADA 
+//cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("NewPolicy", app =>
     {
-        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
     });
 });
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// http
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -64,9 +66,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("NewPolicy");
 app.UseAuthentication();
-app.UseHttpsRedirection();
 app.UseAuthorization();
 
-app.MapControllers(); // Asegúrate de mapear los controladores aquí
+app.MapControllers();
 
 app.Run();

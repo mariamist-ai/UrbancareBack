@@ -1,27 +1,46 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace UrbanCareBack.Models;
+namespace UrbanCareBack.Models{
+    public class Evento
+    {
+        [Key]
+        public int IdEvento { get; set; }
+            
+        [Required]
+        [StringLength(45)]
+        public required string Nombre { get; set; }
 
-public class Evento
-{
-    [Key]
-    public int IdEvento { get; set; }
-    public required string Nombre { get; set; }
-    public required string Descripcion { get; set; }
-    public required string FechaInicio { get; set; }
-    public required string FechaFin { get; set; }
-    public required string Ubicacion { get; set; }
-    public required string Estado { get; set; }
+        [Required]
+        [StringLength(255)]
+        public required string Descripcion { get; set; }
 
-    public int TipoEventoId { get; set; }
-    public required TipoEvento TipoEvento { get; set; }
+        [Required]
+        [DataType(DataType.Date)]
+        public required DateTime FechaInicio { get; set; }
 
-    public int OrganizacionId { get; set; }
-    public required Organizacion Organizacion { get; set; }
+        [Required]
+        [DataType(DataType.Date)]
+        public required DateTime FechaFin { get; set; }
 
-    public int LogEventoId { get; set; }
-    public required LogEvento LogEvento { get; set; }
+        [Required]
+        [StringLength(50)]
+        public required string Ubicacion { get; set; }
 
-    // Propiedad de navegación para participaciones
-    public ICollection<Participacion> Participaciones { get; set; } = new List<Participacion>();
+        [Required]
+        [StringLength(10)]
+        public required string Estado { get; set; }
+
+        [Required]
+        [StringLength(35)]
+        public required string TipoEvento { get; set; }
+
+        public int OrganizacionId { get; set; }
+
+        [JsonIgnore]
+        public Organizacion? Organizacion { get; set; }
+
+        [JsonIgnore]
+        public ICollection<Participacion> Participaciones { get; set; } = new List<Participacion>();
+    }
 }

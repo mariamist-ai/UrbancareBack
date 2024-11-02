@@ -24,26 +24,51 @@ namespace UrbanCareBack.Custom{
                 for(int i = 0; i < bytes.Length; i++){
                     builder.Append(bytes[i].ToString("x2"));
                 }
-
                 return builder.ToString();
             }
         }
 
-        public string generarTokenJwt(Participante participante){
-            
-            //creando la info del usuario para token
-            var userClaims = new []{
-                new Claim(ClaimTypes.NameIdentifier, participante.IdParticipante.ToString()),
-                new Claim(ClaimTypes.Email, participante.Username!)
-            };
+
+        public string generarTokenJwt(object usuario)
+        {
+            Claim[] userClaims;
+            string rol;
+
+            if (usuario is Organizacion organizacion)
+            {
+                // Creando la info del usuario para token de organización
+                userClaims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, organizacion.IdOrganizacion.ToString()),
+                    new Claim(ClaimTypes.Email, organizacion.Username!),
+                    new Claim("rol", "Organizacion"), // Claim adicional para tipo de usuario
+                    new Claim("OrganizacionId", organizacion.IdOrganizacion.ToString()) // Añadir OrganizationId
+                };
+                rol = "Organizacion";
+            }
+            else if (usuario is Administrador administrador)
+            {
+                // Creando la info del usuario para token de administrador
+                userClaims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, administrador.IdAdministrador.ToString()),
+                    new Claim(ClaimTypes.Email, administrador.Username!),
+                    new Claim("rol", "Administrador"), // Claim adicional para tipo de usuario
+                };
+                rol = "Administrador";
+            }
+            else
+            {
+                throw new ArgumentException("Tipo de usuario no válido.");
+            }
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
-            //crear detalle del token 
+            // Crear detalle del token
             var jwtConfig = new JwtSecurityToken(
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddMinutes(10), // Tiempo de expiración (puedes parametrizarlo si es necesario)
                 signingCredentials: credentials
             );
 

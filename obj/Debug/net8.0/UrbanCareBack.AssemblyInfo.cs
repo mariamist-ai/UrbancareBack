@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UrbanCareBack")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3676c86a9e834a2de727c603bdf45047701b84ea")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+410f119ad738be0de235d2c53ddc9edbd1a5705a")]
 [assembly: System.Reflection.AssemblyProductAttribute("UrbanCareBack")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UrbanCareBack")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

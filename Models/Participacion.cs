@@ -11,9 +11,10 @@ public class Participacion
     public int ParticipanteId { get; set; }
     public required Participante Participante { get; set; }
 
-    public required string FechaInscripcion { get; set; }
-    public required string HoraInscripcion { get; set; }
+    [DataType(DataType.Date)] //solo toma la fecha YYYY/MM/DD
+    public required DateTime FechaInscripcion { get; set; }
 
-    // Propiedad de navegación para las insignias
+    public required TimeSpan HoraInscripcion { get; set; }
+
     public ICollection<Insignia> Insignias { get; set; } = new List<Insignia>();
 }

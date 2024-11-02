@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UrbanCareBack.Custom;
 using UrbanCareBack.Data;
 using UrbanCareBack.Models;
 using UrbanCareBack.Services;
@@ -7,6 +9,7 @@ using UrbanCareBack.Services;
 namespace UrbanCareBack.Controllers
 {
     [Route("/[controller]")]
+    [AllowAnonymous]
     [ApiController]
     public class AdministradorController : ControllerBase
     {
@@ -35,13 +38,6 @@ namespace UrbanCareBack.Controllers
             }
 
             return Ok(administrador);
-        }
-
-        [HttpPost("guardar")]
-        public async Task<ActionResult<Administrador>> PostAdministrador(Administrador administrador)
-        {
-            await _administradorService.AgregarAdministrador(administrador);
-            return CreatedAtAction(nameof(GetAdministrador), new { id = administrador.IdAdministrador }, administrador);
         }
 
         [HttpPut("actualizar/{id}")]

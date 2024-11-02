@@ -1,0 +1,8 @@
+
+[] LISTAR COLABORADORES SEGUN LA ORGANIZACION
+[] CREAR LOS EVENTOS Y LISTARLOS
+[] ARREGLAR LOS ATRIBUTOS DE LOS COLABORADORES (TIPO DE COLABORADORES)
+
+
+
+[] Tratar de manejar ENUM en los atributos que tienen datos establecidos (estado, tipo)

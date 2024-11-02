@@ -6,12 +6,13 @@ using UrbanCareBack.Custom;
 using UrbanCareBack.Models;
 using UrbanCareBack.Dto;
 using UrbanCareBack.Data;
+using System.Security.Claims;
 
 namespace UrbanCareBack.Controllers{
     [Route("/[controller]")]
-    [AllowAnonymous]// se puede acceder sin que el usuario este autorizado, debido a que es el login 
+    [AllowAnonymous]
     [ApiController]
-    public class AccesoController : ControllerBase{
+        public class AccesoController : ControllerBase{
         private readonly UrbanCareDbContext _context;
         private readonly Utilidades _utilidades;
         public AccesoController(UrbanCareDbContext context, Utilidades utilidades) { 
@@ -20,38 +21,91 @@ namespace UrbanCareBack.Controllers{
         }
 
         [HttpPost]
-        [Route("Registrar")]
-        public async Task<IActionResult> Registrar(ParticipanteDto objeto){
-            var modeloParticipante =  new Participante{
-                Nombre = objeto.Nombre,
-                Apellido = objeto.Apellido,
-                Celular = objeto.Celular,
-                NumDoc = objeto.NumDoc,
-                TipoDocId = objeto.TipoDocId,
-                Username = objeto.Username,
-                Password = _utilidades.encriptarSHA256(objeto.Password)
-            };
+        [Route("registrarOrg")]
+        public async Task<IActionResult> RegistrarOrg(Organizacion organizacion)
+        {
+            organizacion.Password = _utilidades.encriptarSHA256(organizacion.Password);
 
-            await _context.Participantes.AddAsync(modeloParticipante);//se agrega de manera asincrona el usuario
+            await _context.Organizaciones.AddAsync(organizacion);
             await _context.SaveChangesAsync();
 
-            if(modeloParticipante.IdParticipante != 0){
-                return StatusCode(StatusCodes.Status200OK, new {Estado = "usuario registrado correctamente"});
-            } else{
-                return StatusCode(StatusCodes.Status200OK, new {Estado = "El usuario no pudo registrarse"});
+            if (organizacion.IdOrganizacion != 0){
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "Organizacion registrada correctamente" });
+            }
+            else{
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "La organizacion no pudo registrarse" });
             }
         }
 
         [HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login(LoginDto objeto){
-            var usuarioEncontrado = await _context.Participantes.Where(u => u.Username == objeto.Username && u.Password == _utilidades.encriptarSHA256(objeto.Password)).FirstOrDefaultAsync();
+        [Route("registrarAdmin")]
+        public async Task<IActionResult> RegistrarAdm(Administrador administrador)
+        {
+            administrador.Password = _utilidades.encriptarSHA256(administrador.Password);
 
-            if(usuarioEncontrado == null){
-                return StatusCode(StatusCodes.Status200OK, new {Estado = "El token no fue generado", token = ""});
-            } else{
-                return StatusCode(StatusCodes.Status200OK, new {Estado = "El token fue generado", token = _utilidades.generarTokenJwt(usuarioEncontrado)});
+            await _context.Administradores.AddAsync(administrador);
+            await _context.SaveChangesAsync();
+
+            if (administrador.IdAdministrador != 0){
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "Administrador registrado correctamente" });
             }
+            else{
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "El administrador no pudo registrarse" });
+            }
+        }
+
+        [HttpPost]
+        [Route("Ingresar")]
+        public async Task<IActionResult> Ingresar(LoginDto objeto)
+        {
+            var organizacion = await _context.Organizaciones
+                .Where(u => u.Username == objeto.Username && u.Password == _utilidades.encriptarSHA256(objeto.Password))
+                .FirstOrDefaultAsync();
+
+            if (organizacion != null)
+            {
+                var token = _utilidades.generarTokenJwt(organizacion);
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "El token fue generado", token, rol = "Organizacion" });
+            }
+
+            var administrador = await _context.Administradores
+                .Where(u => u.Username == objeto.Username && u.Password == _utilidades.encriptarSHA256(objeto.Password))
+                .FirstOrDefaultAsync();
+
+            if (administrador != null)
+            {
+                var token = _utilidades.generarTokenJwt(administrador);
+                return StatusCode(StatusCodes.Status200OK, new { Estado = "El token fue generado", token, rol = "Administrador" });
+            }
+
+            return StatusCode(StatusCodes.Status200OK, new { Estado = "El token no fue generado" });
+        }
+
+        [HttpGet]
+        [Route("usuarioActual")]  
+        public async Task<IActionResult> ObtenerUsuarioActual()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var rol = User.FindFirstValue("rol");
+
+            if (rol == "Organizacion")
+            {
+                var organizacion = await _context.Organizaciones.FindAsync(int.Parse(userId!));
+                if (organizacion != null)
+                {
+                    return Ok(new { Tipo = "Organizacion", Datos = organizacion });
+                }
+            }
+            else if (rol == "Administrador")
+            {
+                var administrador = await _context.Administradores.FindAsync(int.Parse(userId!));
+                if (administrador != null)
+                {
+                    return Ok(new { Tipo = "Administrador", Datos = administrador });
+                }
+            }
+
+            return NotFound("Usuario no encontrado");
         }
     }
 }

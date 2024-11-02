@@ -1,5 +1,3 @@
-
-
 namespace UrbanCareBack.Dto{
     public class LoginDto{
         public required string Username { get; set; }
